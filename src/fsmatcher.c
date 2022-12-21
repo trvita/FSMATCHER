@@ -30,20 +30,27 @@ int main(int argc, char **argv) {
       }
     }
   }
-  if (strlen(argv[2 + recurs]) > 256) {
+  size_t temp = strlen(argv[2 + recurs]);
+  if (temp > 256) {
     printf("Length of directory name is above 256\n");
     return -3;
   }
-  if (strlen(argv[1 + recurs]) > 256) {
+  temp = strlen(argv[1 + recurs]);
+  if (temp > 256) {
     printf("Length of sample is above 256\n");
     return -4;
   }
-  if (strlen(argv[1 + recurs]) < 1) {
+  temp = strlen(argv[1 + recurs]);
+  if (temp < 1) {
     printf("The sample is empty\n");
     return -5;
   }
-  char *dir1 = (char *)malloc(sizeof(char) * 256);
-  char *sample = (char *)malloc(sizeof(char) * 256);
+  char *dir1 = (char *)calloc(sizeof(char), 256);
+  if (!dir1)
+    return -7;
+  char *sample = (char *)calloc(sizeof(char), 256);
+  if (!sample)
+    return -7;
 
   for (i = 0; i < strlen(argv[2 + recurs]); i++) {
     dir1[i] = (argv[2 + recurs])[i];
@@ -52,16 +59,12 @@ int main(int argc, char **argv) {
     sample[i] = (argv[1 + recurs])[i];
   }
 
-  sample = realloc(sample, strlen(argv[1 + recurs]));
-  dir1 = realloc(dir1, strlen(argv[2 + recurs]));
-
   size_t lenSample = strlen(sample);
   int findsCounter = 0;
   int *counter;
   counter = &findsCounter;
   int transitionTable[256][256];
   DIR *dir;
-  dir = opendir(dir1);
   if ((dir = opendir(dir1)) == NULL) {
     printf("There is no such directory\n");
     closedir(dir);
