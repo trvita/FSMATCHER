@@ -23,38 +23,41 @@ int match(const char *text, int transitionTable[256][256],
 
 void recursion(char *path, int transitionTable[256][256],
                const size_t lenSample, int *findsCounter) {
-  char *fpath = (char *)malloc(sizeof(char) * 256);
+  char *fpath = (char *)calloc(sizeof(char), 256);
   DIR *dir;
   struct dirent *ent;
-  dir = opendir(path);
-  while ((ent = readdir(dir)) != NULL) {
-    char *fileName = (char *)malloc(sizeof(char) * 256);
-    strcpy(fileName, ent->d_name);
-    int lenFilename = strlen(fileName);
-    fileName = realloc(fileName, lenFilename + 1);
-    int matchIndex = match(fileName, transitionTable, lenSample);
-    if (matchIndex >= 0) {
-      printf("%s%sm%20s%s0m - ", CSI, colors[3], fileName, CSI);
-      *findsCounter += 1;
-    } else
-      printf("%20s - ", fileName);
-    if (ent->d_type == DT_REG) {
-      printf("file\n");
-    } else {
-      if ((ent->d_type == DT_DIR) && (strcmp(fileName, ".") != 0) &&
-          (strcmp(fileName, "..") != 0)) {
-        printf("directory\n");
-        strcpy(fpath, path);
-        fpath = strcat(fpath, "/");
-        fpath = strcat(fpath, fileName);
-        recursion(fpath, transitionTable, lenSample, findsCounter);
+  if ((dir = opendir(path)) != NULL) {
+    while ((ent = readdir(dir)) != NULL) {
+      char *fileName = (char *)calloc(sizeof(char), 256);
+      strcpy(fileName, ent->d_name);
+      int matchIndex = match(fileName, transitionTable, lenSample);
+      if (matchIndex >= 0) {
+        printf("%s%sm%20s%s0m - ", CSI, colors[3], fileName, CSI);
+        *findsCounter += 1;
       } else
-        printf("other type\n");
+        printf("%20s - ", fileName);
+      if (ent->d_type == DT_REG) {
+        printf("file\n");
+      } else {
+        if ((ent->d_type == DT_DIR) && (strcmp(fileName, ".") != 0) &&
+            (strcmp(fileName, "..") != 0)) {
+          printf("directory\n");
+          strcpy(fpath, path);
+          fpath = strcat(fpath, "/");
+          fpath = strcat(fpath, fileName);
+          recursion(fpath, transitionTable, lenSample, findsCounter);
+        } else
+          printf("other type\n");
+      }
+      free(fileName);
     }
-    free(fileName);
+    closedir(dir);
+    free(fpath);
+  } else {
+    closedir(dir);
+    printf("There is no such directoty\n");
+    return;
   }
-  closedir(dir);
-  free(fpath);
 }
 
 void nonRecursion(char *path, int transitionTable[256][256],
@@ -63,10 +66,8 @@ void nonRecursion(char *path, int transitionTable[256][256],
   struct dirent *ent;
   if ((dir = opendir(path)) != NULL) {
     while ((ent = readdir(dir)) != NULL) {
-      char *fileName = (char *)malloc(sizeof(char) * 256);
+      char *fileName = (char *)calloc(sizeof(char), 256);
       strcpy(fileName, ent->d_name);
-      int lenFilename = strlen(fileName);
-      fileName = realloc(fileName, lenFilename + 1);
       int matchIndex = match(fileName, transitionTable, lenSample);
       if (matchIndex >= 0) {
         printf("%s%sm%20s%s0m - ", CSI, colors[3], fileName, CSI);
@@ -82,6 +83,7 @@ void nonRecursion(char *path, int transitionTable[256][256],
     }
     closedir(dir);
   } else {
+    closedir(dir);
     printf("There is no such directoty\n");
     return;
   }
