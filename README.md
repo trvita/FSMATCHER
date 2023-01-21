@@ -15,4 +15,4 @@
     $ .bin/fsmatcher - r “g.le” ~/mydir #Рекурсивный поиск во всех директориях, расположенных ниже ~/mydir  
 Запуск тестов:
 
-    $ ./bin/fsmatcher #Запуск тестов
+    $ ./bin/fsmatcher
